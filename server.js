@@ -108,11 +108,20 @@ app.post('/webhook/nowpayments', async (req, res) => {
 });
 
 // Get txHash
-app.get('/api/get-tx/:noteId', (req, res) => {
-  console.log('Get tx request:', req.params.noteId);
-  const txHash = tempStorage[req.params.noteId]?.txHash;
+app.post('/api/get-tx', (req, res) => { // Thay get thành post nếu cần
+  const { noteId } = req.body; // Để an toàn, dùng body
+  console.log('Get tx request:', noteId);
+  const txHash = tempStorage[noteId]?.txHash;
   if (txHash) res.json({ txHash });
   else res.status(404).json({ error: 'Chưa xác nhận' });
 });
 
-app.listen(process.env.PORT || 3000, () => console.log('Back-end running'));
+const server = app.listen(process.env.PORT || 3000, () => console.log('Back-end running'));
+
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});
